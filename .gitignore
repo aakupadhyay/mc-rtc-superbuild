@@ -3,3 +3,4 @@ devel/
 install/
 **/.devpod-internal
 .ccache/
+log/
