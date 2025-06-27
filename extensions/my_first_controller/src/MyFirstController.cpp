@@ -17,7 +17,6 @@ MyFirstController::MyFirstController(mc_rbdyn::RobotModulePtr rm, double dt, con
   /* Joint and Velocity limits*/
   solver().addConstraintSet(kinematicsConstraint);
   solver().addTask(postureTask);
-  // postureTask->stiffness(1.0);
 
   comTask = std::make_shared<mc_tasks::CoMTask>(robots(), 0);
   solver().addTask(comTask);
@@ -27,12 +26,14 @@ MyFirstController::MyFirstController(mc_rbdyn::RobotModulePtr rm, double dt, con
   
   std::vector<std::string> leftJoints = {"L_SHOULDER_P", "L_SHOULDER_Y", "L_SHOULDER_R",
       "L_ELBOW_P", "L_ELBOW_Y", "L_WRIST_R", "L_WRIST_Y", "L_UTHUMB"};
-
+  
+  /* Left hand movement task*/
   lfTask = std::make_shared<mc_tasks::EndEffectorTask>("l_wrist", robots(), 0, 1.0, 500.0);
   lfTask->selectActiveJoints(solver(), leftJoints);
   lfTask->selectUnactiveJoints(solver(), rightJoints);
   solver().addTask(lfTask);
-
+  
+  /* Right hand movement task*/
   rhTask = std::make_shared<mc_tasks::EndEffectorTask>("r_wrist", robots(), 0, 1.0, 500.0);
   rhTask->selectActiveJoints(solver(), rightJoints);
   rhTask->selectUnactiveJoints(solver(), leftJoints);
