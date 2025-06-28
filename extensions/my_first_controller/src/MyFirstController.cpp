@@ -5,7 +5,6 @@ MyFirstController::MyFirstController(mc_rbdyn::RobotModulePtr rm, double dt, con
 : mc_control::MCController(rm, dt)
 {
   jointIndex = robot().jointIndexByName(jointName);
-  // leftHandId = robot().jointIndexByName(jointLeft);
 
   config_.load(config);
   solver().addConstraintSet(contactConstraint);
