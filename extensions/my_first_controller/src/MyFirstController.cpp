@@ -45,60 +45,6 @@ MyFirstController::MyFirstController(mc_rbdyn::RobotModulePtr rm, double dt, con
 bool MyFirstController::run()
 {
   // bool ret = mc_control::MCController::run();
-  // auto lpt = lfTask->get_ef_pose();
-  // auto rpt = rhTask->get_ef_pose();
-  // auto p = postureTask->posture();
-
-  //   if(!move_Left){
-
-  //     if(comTask->eval().norm() < 5e-2 && comTask->speed().norm() < 1e-4)
-  //     {
-  //       mc_rtc::log::success("Moved left hand");
-  //       move_Left = true;
-  //       // solver().addTask(lfTask); 
-  //       postureTask->target({{jointName, robot().qu()[jointIndex]}});
-  //       lfTask->set_ef_pose(sva::PTransformd{
-  //         Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, 0.25, 1.1}});
-  //     }
-  //     // return ret;
-  //   }
-
-  //   if(move_Left && !move_Right)
-  //   {
-  //     if (lfTask->eval().norm() < 5e-2 && lfTask->speed().norm() < 1e-4)
-  //     {
-  //       mc_rtc::log::success("Moved right hand");
-  //       move_Right = true;
-  //       lfTask->set_ef_pose(lpt);
-  //       // solver().removeTask(lfTask);
-
-  //       // solver().addTask(rhTask);
-  //       postureTask->target({{jointName, robot().ql()[jointIndex]}}); 
-  //       rhTask->set_ef_pose(sva::PTransformd{
-  //         Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, -0.25, 1.1}});      
-  //     }
-  //     // return ret;
-  //   }
-
-  //   if (move_Left && move_Right && !move_both)
-  //   {
-  //     if (rhTask->eval().norm() < 5e-2 && rhTask->speed().norm() < 1e-4)
-  //     {
-  //       mc_rtc::log::success("Moved both hands");
-  //       move_both = true;
-  //       postureTask->posture(p);
-  //       rhTask->set_ef_pose(rpt);
-
-  //       // solver().addTask(lfTask);
-  //       lfTask->set_ef_pose(sva::PTransformd{
-  //         Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, 0.25, 1.1}});
-        
-  //       rhTask->set_ef_pose(sva::PTransformd{
-  //         Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, -0.25, 1.1}});
-  //     }
-  //     // return ret;
-  //   }
-
   
   if(std::abs(postureTask->posture()[jointIndex][0] - robot().mbc().q[jointIndex][0]) < 0.05) { switch_target(); }
   // auto rm = mc_rbdyn::RobotLoader::get_robot_module("JVRC1");
