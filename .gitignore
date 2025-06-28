@@ -4,3 +4,4 @@ install/
 **/.devpod-internal
 .ccache/
 log/
+.vscode/
