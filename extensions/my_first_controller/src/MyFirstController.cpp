@@ -19,8 +19,8 @@ MyFirstController::MyFirstController(mc_rbdyn::RobotModulePtr rm, double dt, con
 
   solver().addTask(postureTask);
 
-  // comTask = std::make_shared<mc_tasks::CoMTask>(robots(), 0);
-  // solver().addTask(comTask);
+  comTask = std::make_shared<mc_tasks::CoMTask>(robots(), 0);
+  solver().addTask(comTask);
 
   lTurn = std::make_shared<mc_tasks::LookAtFrameTask>(robots(), 
   robot().robotIndex(), headCenter, Eigen::Vector3d{0, 0, 1.0}, robot().robotIndex(), lHand, 10);
@@ -43,13 +43,13 @@ MyFirstController::MyFirstController(mc_rbdyn::RobotModulePtr rm, double dt, con
   lfTask = std::make_shared<mc_tasks::EndEffectorTask>("l_wrist", robots(), 0, 1.0, 500.0);
   lfTask->selectActiveJoints(solver(), leftJoints);
   // lfTask->selectUnactiveJoints(solver(), rightJoints);
-  solver().addTask(lfTask);
+  // solver().addTask(lfTask);
   
   // /* Right hand movement task*/
   rhTask = std::make_shared<mc_tasks::EndEffectorTask>("r_wrist", robots(), 0, 1.0, 500.0);
   rhTask->selectActiveJoints(solver(), rightJoints);
   // rhTask->selectUnactiveJoints(solver(), leftJoints);
-  solver().addTask(rhTask);
+  // solver().addTask(rhTask);
 
   mc_rtc::log::success("MyFirstController init done ");
 }
@@ -63,7 +63,7 @@ bool MyFirstController::run()
 
     if(!move_Left){
 
-      if(postureTask->eval().norm() < 5e-2)
+      if(postureTask->eval().norm() < 5e-2 && comTask->eval().norm() < 0.05)
       {
         mc_rtc::log::success("Moved left hand");
         move_Left = true;
@@ -71,6 +71,7 @@ bool MyFirstController::run()
           Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, 0.25, 1.1}};
         auto loffset = lpt.inv() * leftPose;
         lfTask->set_ef_pose(loffset);
+        solver().addTask(lfTask);
         solver().addTask(lTurn);
       }
       // return ret;
@@ -78,7 +79,7 @@ bool MyFirstController::run()
 
     if(move_Left && !move_Right)
     {
-      if (lfTask->eval().norm() < 5e-2 && lfTask->speed().norm() < 1e-4)
+      if (lfTask->eval().norm() < 5e-2 && lfTask->speed().norm() < 1e-4 && comTask->eval().norm() < 0.05)
       {
         mc_rtc::log::success("Moved right hand");
         move_Right = true;
@@ -89,6 +90,7 @@ bool MyFirstController::run()
         sva::PTransformd rightPose{Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, -0.25, 1.1}};
         auto roffset = rpt.inv() * rightPose;
         rhTask->set_ef_pose(roffset); 
+        solver().addTask(rhTask);
         solver().addTask(rTurn);     
       }
       // return ret;
@@ -130,7 +132,7 @@ bool MyFirstController::run()
 void MyFirstController::reset(const mc_control::ControllerResetData & reset_data)
 {
   // comZero = comTask->com();
-  // comTask->reset();
+  comTask->reset();
 
   lTurn->reset();
 
