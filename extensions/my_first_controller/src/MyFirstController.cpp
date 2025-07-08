@@ -30,9 +30,6 @@ MyFirstController::MyFirstController(mc_rbdyn::RobotModulePtr rm, double dt, con
   robot().robotIndex(), headCenter, Eigen::Vector3d{0, 0, 1.0}, robot().robotIndex(), rHand, 10);
   // solver().addTask(rTurn);
 
-  // lfTask = std::make_shared<mc_tasks::SurfaceTransformTask>(lHand, robots(), robot().robotIndex());
-  // solver().addTask(lfTask);
-
   std::vector<std::string> rightJoints = {"R_SHOULDER_P", "R_SHOULDER_Y", "R_SHOULDER_R",
     "R_ELBOW_P", "R_ELBOW_Y", "R_WRIST_R", "R_WRIST_Y", "R_UTHUMB" };
   
@@ -61,14 +58,18 @@ bool MyFirstController::run()
   auto rpt = rhTask->get_ef_pose();
   // auto p = postureTask->posture();
 
+  sva::PTransformd leftPose{
+    Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, 0.25, 1.1}};
+
+  sva::PTransformd rightPose{
+      Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, -0.25, 1.1}};
+
     if(!move_Left){
 
       if(postureTask->eval().norm() < 5e-2 && comTask->eval().norm() < 0.05)
       {
         mc_rtc::log::success("Moved left hand");
         move_Left = true;
-        sva::PTransformd leftPose{
-          Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, 0.25, 1.1}};
         auto loffset = lpt.inv() * leftPose;
         lfTask->set_ef_pose(loffset);
         solver().addTask(lfTask);
@@ -87,7 +88,6 @@ bool MyFirstController::run()
         lfTask->set_ef_pose(lfTask->get_ef_pose().inv() * lpt);
         solver().removeTask(lfTask);
 
-        sva::PTransformd rightPose{Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, -0.25, 1.1}};
         auto roffset = rpt.inv() * rightPose;
         rhTask->set_ef_pose(roffset); 
         solver().addTask(rhTask);
@@ -96,24 +96,25 @@ bool MyFirstController::run()
       // return ret;
     }
 
-  //   if (move_Left && move_Right && !move_both)
-  //   {
-  //     if (rhTask->eval().norm() < 5e-2 && rhTask->speed().norm() < 1e-4)
-  //     {
-  //       mc_rtc::log::success("Moved both hands");
-  //       move_both = true;
-  //       postureTask->posture(p);
-  //       rhTask->set_ef_pose(rpt);
+    if (move_Left && move_Right && !move_both)
+    {
+      if (rhTask->eval().norm() < 5e-2 && rhTask->speed().norm() < 1e-4)
+      {
+        mc_rtc::log::success("Moved both hands");
+        move_both = true;
+        // postureTask->posture(p);
+        solver().removeTask(rTurn);
+        rhTask->set_ef_pose(rhTask->get_ef_pose().inv() * rpt);
+        solver().removeTask(rhTask);
 
-  //       // solver().addTask(lfTask);
-  //       lfTask->set_ef_pose(sva::PTransformd{
-  //         Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, 0.25, 1.1}});
+        solver().addTask(lfTask);
+        lfTask->set_ef_pose(lpt.inv() * leftPose);
         
-  //       rhTask->set_ef_pose(sva::PTransformd{
-  //         Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, -0.25, 1.1}});
-  //     }
-  //     // return ret;
-  //   }
+        solver().addTask(rhTask);
+        rhTask->set_ef_pose(rpt.inv() * rightPose);
+      }
+      // return ret;
+    }
 
   
   // if(std::abs(postureTask->posture()[jointIndex][0] - robot().mbc().q[jointIndex][0]) < 0.05) { switch_target(); }
