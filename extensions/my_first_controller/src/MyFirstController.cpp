@@ -54,67 +54,69 @@ MyFirstController::MyFirstController(mc_rbdyn::RobotModulePtr rm, double dt, con
 bool MyFirstController::run()
 {
   // bool ret = mc_control::MCController::run();
-  auto lpt = lfTask->get_ef_pose();
-  auto rpt = rhTask->get_ef_pose();
+  // auto lpt = lfTask->get_ef_pose();
+  // auto rpt = rhTask->get_ef_pose();
   // auto p = postureTask->posture();
 
-  sva::PTransformd leftPose{
-    Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, 0.25, 1.1}};
+  // sva::PTransformd leftPose{
+  //   Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, 0.25, 1.1}};
 
-  sva::PTransformd rightPose{
-      Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, -0.25, 1.1}};
+  // sva::PTransformd rightPose{
+  //     Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, -0.25, 1.1}};
 
-    if(!move_Left){
+  //   if(!move_Left){
 
-      if(postureTask->eval().norm() < 5e-2 && comTask->eval().norm() < 0.05)
-      {
-        mc_rtc::log::success("Moved left hand");
-        move_Left = true;
-        auto loffset = lpt.inv() * leftPose;
-        lfTask->set_ef_pose(loffset);
-        solver().addTask(lfTask);
-        solver().addTask(lTurn);
-      }
-      // return ret;
-    }
+  //     if(postureTask->eval().norm() < 5e-2 && comTask->eval().norm() < 0.05)
+  //     {
+  //       mc_rtc::log::success("Moved left hand");
+  //       move_Left = true;
+  //       auto loffset = lpt.inv() * leftPose;
+  //       lfTask->set_ef_pose(loffset);
+  //       solver().addTask(lfTask);
+  //       solver().addTask(lTurn);
+  //     }
+  //     // return ret;
+  //   }
 
-    if(move_Left && !move_Right)
-    {
-      if (lfTask->eval().norm() < 5e-2 && lfTask->speed().norm() < 1e-4 && comTask->eval().norm() < 0.05)
-      {
-        mc_rtc::log::success("Moved right hand");
-        move_Right = true;
-        solver().removeTask(lTurn);
-        lfTask->set_ef_pose(lfTask->get_ef_pose().inv() * lpt);
-        solver().removeTask(lfTask);
+  //   if(move_Left && !move_Right)
+  //   {
+  //     if (lfTask->eval().norm() < 5e-2 && lfTask->speed().norm() < 1e-4 && comTask->eval().norm() < 0.05)
+  //     {
+  //       mc_rtc::log::success("Moved right hand");
+  //       move_Right = true;
+  //       solver().removeTask(lTurn);
+  //       lfTask->set_ef_pose(lfTask->get_ef_pose().inv() * lpt);
+  //       solver().removeTask(lfTask);
 
-        auto roffset = rpt.inv() * rightPose;
-        rhTask->set_ef_pose(roffset); 
-        solver().addTask(rhTask);
-        solver().addTask(rTurn);     
-      }
-      // return ret;
-    }
+  //       auto roffset = rpt.inv() * rightPose;
+  //       rhTask->set_ef_pose(roffset); 
+  //       solver().addTask(rhTask);
+  //       solver().addTask(rTurn);     
+  //     }
+  //     // return ret;
+  //   }
 
-    if (move_Left && move_Right && !move_both)
-    {
-      if (rhTask->eval().norm() < 5e-2 && rhTask->speed().norm() < 1e-4)
-      {
-        mc_rtc::log::success("Moved both hands");
-        move_both = true;
-        // postureTask->posture(p);
-        solver().removeTask(rTurn);
-        rhTask->set_ef_pose(rhTask->get_ef_pose().inv() * rpt);
-        solver().removeTask(rhTask);
+  //   if (move_Left && move_Right && !move_both)
+  //   {
+  //     if (rhTask->eval().norm() < 5e-2 && rhTask->speed().norm() < 1e-4)
+  //     {
+  //       mc_rtc::log::success("Moved both hands");
+  //       move_both = true;
+  //       // postureTask->posture(p);
+  //       solver().removeTask(rTurn);
+  //       rhTask->set_ef_pose(rhTask->get_ef_pose().inv() * rpt);
+  //       solver().removeTask(rhTask);
 
-        solver().addTask(lfTask);
-        lfTask->set_ef_pose(lpt.inv() * leftPose);
+  //       postureTask->posture(p);
+
+  //       solver().addTask(lfTask);
+  //       lfTask->set_ef_pose(lpt.inv() * leftPose);
         
-        solver().addTask(rhTask);
-        rhTask->set_ef_pose(rpt.inv() * rightPose);
-      }
-      // return ret;
-    }
+  //       solver().addTask(rhTask);
+  //       rhTask->set_ef_pose(rpt.inv() * rightPose);
+  //     }
+  //     // return ret;
+  //   }
 
   
   // if(std::abs(postureTask->posture()[jointIndex][0] - robot().mbc().q[jointIndex][0]) < 0.05) { switch_target(); }
@@ -126,6 +128,12 @@ bool MyFirstController::run()
   //     std::cout<<std::endl;
   //   }
   // }
+
+  if (postureTask->eval().norm() < 5e-2)
+  {
+    switch_target();
+  }
+  
   
   return mc_control::MCController::run();
 }
@@ -155,65 +163,75 @@ void MyFirstController::reset(const mc_control::ControllerResetData & reset_data
 
 void MyFirstController::switch_target()
 {
-  // auto lpt = lfTask->get_ef_pose();
-  // auto rpt = rhTask->get_ef_pose();
-  // auto p = postureTask->posture();
+  auto lpt = lfTask->get_ef_pose();
+  auto rpt = rhTask->get_ef_pose();
+  auto p = postureTask->posture();
 
-  // if(all_tasks)
-  // {
+  if(all_tasks)
+  {
 
-  //   if(!move_Left){
+    sva::PTransformd leftPose{
+      Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, 0.25, 1.1}};
+  
+    sva::PTransformd rightPose{
+        Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, -0.25, 1.1}};
+  
+      if(!move_Left){
+  
+        if(comTask->eval().norm() < 0.05)
+        {
+          mc_rtc::log::success("Moved left hand");
+          move_Left = true;
+          auto loffset = lpt.inv() * leftPose;
+          lfTask->set_ef_pose(loffset);
+          solver().addTask(lfTask);
+          solver().addTask(lTurn);
+        }
+        // return ret;
+      }
+  
+      if(move_Left && !move_Right)
+      {
+        if (lfTask->eval().norm() < 5e-2 && lfTask->speed().norm() < 1e-4)
+        {
+          mc_rtc::log::success("Moved right hand");
+          move_Right = true;
+          solver().removeTask(lTurn);
+          lfTask->set_ef_pose(lfTask->get_ef_pose().inv() * lpt);
+          solver().removeTask(lfTask);
+  
+          auto roffset = rpt.inv() * rightPose;
+          rhTask->set_ef_pose(roffset); 
+          solver().addTask(rhTask);
+          solver().addTask(rTurn);     
+        }
+        // return ret;
+      }
+  
+      if (move_Left && move_Right && !move_both)
+      {
+        if (rhTask->eval().norm() < 5e-2 && rhTask->speed().norm() < 1e-4)
+        {
+          mc_rtc::log::success("Moved both hands");
+          move_both = true;
+          // postureTask->posture(p);
+          solver().removeTask(rTurn);
+          rhTask->set_ef_pose(rhTask->get_ef_pose().inv() * rpt);
+          solver().removeTask(rhTask);
+  
+          postureTask->posture(p);
+  
+          solver().addTask(lfTask);
+          lfTask->set_ef_pose(lpt.inv() * leftPose);
+          
+          solver().addTask(rhTask);
+          rhTask->set_ef_pose(rpt.inv() * rightPose);
+        }
+        // return ret;
+      }
+  }
 
-  //     if(comTask->eval().norm() < 5e-2 && comTask->speed().norm() < 1e-4)
-  //     {
-  //       mc_rtc::log::success("Moved left hand");
-  //       move_Left = true;
-  //       // solver().addTask(lfTask); 
-  //       postureTask->target({{jointName, robot().qu()[jointIndex]}});
-  //       lfTask->set_ef_pose(sva::PTransformd{
-  //         Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, 0.25, 1.1}});
-  //     }
-  //     // return ret;
-  //   }
-
-  //   if(move_Left && !move_Right)
-  //   {
-  //     if (lfTask->eval().norm() < 5e-2 && lfTask->speed().norm() < 1e-4)
-  //     {
-  //       mc_rtc::log::success("Moved right hand");
-  //       move_Right = true;
-  //       lfTask->set_ef_pose(lpt);
-  //       // solver().removeTask(lfTask);
-
-  //       // solver().addTask(rhTask);
-  //       postureTask->target({{jointName, robot().ql()[jointIndex]}}); 
-  //       rhTask->set_ef_pose(sva::PTransformd{
-  //         Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, -0.25, 1.1}});      
-  //     }
-  //     // return ret;
-  //   }
-
-  //   if (move_Left && move_Right && !move_both)
-  //   {
-  //     if (rhTask->eval().norm() < 5e-2 && rhTask->speed().norm() < 1e-4)
-  //     {
-  //       mc_rtc::log::success("Moved both hands");
-  //       move_both = true;
-  //       postureTask->posture(p);
-  //       rhTask->set_ef_pose(rpt);
-
-  //       // solver().addTask(lfTask);
-  //       lfTask->set_ef_pose(sva::PTransformd{
-  //         Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, 0.25, 1.1}});
-        
-  //       rhTask->set_ef_pose(sva::PTransformd{
-  //         Eigen::Quaterniond{0, 0.7, 0, 0.7}, Eigen::Vector3d{0.5, -0.25, 1.1}});
-  //     }
-  //     // return ret;
-  //   }
-  // }
-
-  // all_tasks = !all_tasks;
+  all_tasks = !all_tasks;
     
 }
 
